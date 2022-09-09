@@ -1,6 +1,14 @@
 #ifndef MYSTDIOLIB_H
 #define MYSTDIOLIB_H
 
+struct MYSTREAM {
+    int fd;
+    int pos;
+    int buffsiz;
+    int mode;
+    char buf[];
+};
+
 struct MYSTREAM *myfopen(const char *pathname, int mode, int buffsiz);
 struct MYSTREAM *myfdopen(int fd, int mode, int buffsiz);
 int myfgetc(struct MYSTREAM *stream);
