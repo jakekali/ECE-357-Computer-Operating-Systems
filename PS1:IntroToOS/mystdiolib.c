@@ -93,14 +93,20 @@ int myfgetc(struct MYSTREAM *stream){
 
 int myfputc(int c, struct MYSTREAM *stream){
     stream->buf[stream->pos] = c;
-    stream->pos = stream->pos + 1;
+   int flush_flag;
     if(stream->pos == stream->buffsiz - 1){
         int wr;
         wr = write(stream->fd, stream->buf, stream->buffsiz);
+      flush_flag = 1;
         if(wr == -1 || wr == 0){
             return -1;
         }
     }
+     stream->pos = stream->pos + 1;
+     if (flush_flag == 1) {
+        stream->pos = 0;
+        flush_flag = 0;
+     }
     return c;
 }
 
@@ -130,7 +136,8 @@ int myfclose(struct MYSTREAM *stream){
 
 int  main () {
     struct MYSTREAM *fp;
-    fp = myfopen("test.txt" , O_RDONLY , 4096);
-   printf("%c", myfgetc(fp));
+    fp = myfopen("test.txt" , O_WRONLY , 4096);
+myfputc('a', fp);
+
 
 }
