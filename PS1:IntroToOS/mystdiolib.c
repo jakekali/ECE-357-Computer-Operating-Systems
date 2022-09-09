@@ -10,7 +10,7 @@
 struct MYSTREAM *myfopen(const char *pathname, int mode, int buffsiz){
     int fd;
     errno = 0;
-    if(buffsiz < 1 || (mode != O_WRONLY && mode == O_RDONLY)){
+    if(buffsiz < 1 ||  (mode != O_WRONLY && mode != O_RDONLY)){
         errno = EINVAL;
         return NULL;
     }
