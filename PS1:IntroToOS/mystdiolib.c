@@ -4,6 +4,3 @@
 struct MYSTREAM *myfopen(const char *pathname, int mode, int buffsiz){
     
 }
-
-
-

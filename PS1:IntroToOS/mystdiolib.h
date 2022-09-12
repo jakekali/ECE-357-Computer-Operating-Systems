@@ -8,4 +8,3 @@ int myfputc(int c, struct MYSTREAM *stream);
 int myfclose(struct MYSTREAM *stream);
 
 #endif
-
