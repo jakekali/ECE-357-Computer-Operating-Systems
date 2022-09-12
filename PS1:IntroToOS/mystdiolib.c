@@ -27,7 +27,7 @@ struct MYSTREAM *myfopen(const char *pathname, int mode, int buffsiz){
     
     if(mode == O_WRONLY){
 
-        fd = open(pathname, mode);
+        fd = open(pathname, mode | O_TRUNC);
         if(errno == ENOENT){
             //the file does not exist
             fd = open(pathname, O_WRONLY | O_CREAT , 0777);
@@ -137,7 +137,7 @@ int myfclose(struct MYSTREAM *stream){
 int  main () {
     struct MYSTREAM *fp;
     fp = myfopen("test.txt" , O_WRONLY , 4096);
-myfputc('a', fp);
-
+myfputc('h', fp);
+myfclose(fp);
 
 }
