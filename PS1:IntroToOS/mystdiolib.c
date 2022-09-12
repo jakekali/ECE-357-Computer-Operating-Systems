@@ -58,8 +58,9 @@ struct MYSTREAM *myfopen(const char *pathname, int mode, int buffsiz){
 
 struct MYSTREAM *myfdopen(int fd, int mode, int buffsiz){
     errno = 0;
-    if(buffsiz < 1 || (mode != O_WRONLY && mode == O_RDONLY)){
+    if(buffsiz < 1 || (mode != O_WRONLY && mode != O_RDONLY)){
         errno = EINVAL;
+      
         return NULL;
     }
     
@@ -79,12 +80,19 @@ struct MYSTREAM *myfdopen(int fd, int mode, int buffsiz){
 int myfgetc(struct MYSTREAM *stream){
 
     int readrt;
-    if(stream->buf[0] == '\0')
+    if(stream->buf[stream->pos] == '\0'){
+        stream->pos = 0;
         readrt = read(stream->fd, stream->buf, stream->buffsiz);
-    if(readrt == -1 && errno == 0)
+    }
+    if(readrt == 0 && errno == 0)
         return -1;
+    if(errno != 0) {
+        return -1;
+    }
         
     stream->pos = stream->pos + 1;
+
+
 
     return stream->buf[stream->pos - 1];
 
@@ -93,20 +101,16 @@ int myfgetc(struct MYSTREAM *stream){
 
 int myfputc(int c, struct MYSTREAM *stream){
     stream->buf[stream->pos] = c;
-   int flush_flag;
     if(stream->pos == stream->buffsiz - 1){
         int wr;
+        stream->pos = -1;
         wr = write(stream->fd, stream->buf, stream->buffsiz);
-      flush_flag = 1;
         if(wr == -1 || wr == 0){
             return -1;
         }
     }
      stream->pos = stream->pos + 1;
-     if (flush_flag == 1) {
-        stream->pos = 0;
-        flush_flag = 0;
-     }
+
     return c;
 }
 
@@ -133,11 +137,18 @@ int myfclose(struct MYSTREAM *stream){
     
     return 1;    
 } 
+/*
+int main() {
+    struct MYSTREAM * fp;
+    int c;
+    fp = myfopen("test.txt", O_RDONLY, 4096);
+    int count = 0;
+    while((c = myfgetc(fp)) != EOF) {
+        printf("%d",count);
+        count++;
+        printf("%c \n", c);
 
-int  main () {
-    struct MYSTREAM *fp;
-    fp = myfopen("test.txt" , O_WRONLY , 4096);
-myfputc('h', fp);
-myfclose(fp);
-
+    }
 }
+*/
+

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "mystdiolib.h": "c",
+        "unistd.h": "c"
+    }
+}
