@@ -4,9 +4,9 @@
 struct MYSTREAM {
     int fd;
     int pos;
-    int buffsiz;
+    int bufsiz;
     int mode;
-    char buf[];
+    char *buf;
 };
 
 struct MYSTREAM *myfopen(const char *pathname, int mode, int buffsiz);
