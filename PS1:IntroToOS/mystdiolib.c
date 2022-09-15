@@ -22,7 +22,7 @@ struct MYSTREAM *myfopen(const char *pathname, int mode, int bufsiz){
             return NULL;
         }
 
-    stream->buf = malloc(bufsiz);
+    stream->buf = malloc(bufsiz + 1);
     //malloc failure
     if(stream->buf == NULL){
             errno = ENOMEM; 
@@ -78,7 +78,7 @@ struct MYSTREAM *myfdopen(int fd, int mode, int bufsiz){
             errno = ENOMEM; 
             return NULL;
         }
-    stream->buf = malloc(bufsiz);
+    stream->buf = malloc(bufsiz + 1);
     //malloc failure
     if(stream->buf == NULL){
             errno = ENOMEM; 
