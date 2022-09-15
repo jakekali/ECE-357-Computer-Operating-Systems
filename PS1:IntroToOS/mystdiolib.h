@@ -6,6 +6,7 @@ struct MYSTREAM {
     int pos;
     int bufsiz;
     int mode;
+    int readm;
     char *buf;
 };
 

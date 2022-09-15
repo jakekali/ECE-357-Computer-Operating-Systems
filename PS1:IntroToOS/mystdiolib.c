@@ -59,6 +59,7 @@ struct MYSTREAM *myfopen(const char *pathname, int mode, int bufsiz){
 	stream->bufsiz = bufsiz;
 	stream->pos = 0;
     stream->mode = mode;
+    stream->readm = 0;
 	return stream;
 
     
@@ -87,6 +88,7 @@ struct MYSTREAM *myfdopen(int fd, int mode, int bufsiz){
 	stream->bufsiz = bufsiz;
 	stream->pos = 0;
     stream->mode = mode;
+    stream->readm = 0;
 	return stream;
 }
 
@@ -96,6 +98,7 @@ int myfgetc(struct MYSTREAM *stream){
     if(stream->buf[stream->pos] == '\0'){
         stream->pos = 0;
         readrt = read(stream->fd, stream->buf, stream->bufsiz);
+        stream->buf[readrt] = '\0';
     }
     if(readrt == 0 && errno == 0)
         return -1;
@@ -136,45 +139,25 @@ int myfclose(struct MYSTREAM *stream){
      
     }
     if(stream->mode == O_WRONLY) {
-        int wr;
-        wr = write(stream->fd, stream->buf, stream->pos);
-        if(wr == -1 || wr == 0){
-            return -1;
-        }
-       closert =  close(stream->fd);
-       free(stream->buf);
-        free(stream);
+	    int wr;
+	    wr = write(stream->fd, stream->buf, stream->pos);
+	    if(wr == -1 || wr == 0){
+		    return -1;
+	    }
+	    closert =  close(stream->fd);
+	    free(stream->buf);
+	    free(stream);
 
-           
+
 
     }
     if(closert != 0) {
-    return -1;
+	    return -1;
     }
-    
+
     return 0;    
 } 
 
-/*
- int main() {
-    struct MYSTREAM * file_in;
-        struct MYSTREAM * file_out;
-       file_in = myfdopen(0, O_RDONLY, 4096);
-        file_out = myfopen("test.txt", O_WRONLY, 4096);
-        int c;
-        while((c = myfgetc(file_in)) != EOF) {
-        if(c == '\t') {
-    for(int count = 0; count < 4; count++)
-            myfputc(' ', file_out);
-        } else {
-         myfputc(c, file_out);
-        }
-    
-
-    }
-
-}
-*/
 
 
 
