@@ -1,0 +1,11 @@
+cd /mnt
+mkdir -m755 peter
+touch peter/cooper
+chmod 4755 peter/cooper/
+mkdir -m1777 peter/cooper/abram
+touch peter/cooper/abram/hewitt
+chmod -m600 peter/cooper/abram/hewitt
+touch albert 
+chmod 600 albert
+ln albert peter/cooper/albert/nerkin
+ln -s peter/ peter/cooper/sarah
