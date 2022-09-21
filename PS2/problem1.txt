@@ -8,5 +8,5 @@ touch peter/abram/hewitt
 chmod 600 peter/abram/hewitt
 touch peter/albert 
 chmod 600 peter/albert
-ln albert peter/abram/nerkin
+ln peter/albert peter/abram/nerkin
 ln -s peter/ peter/sarah
