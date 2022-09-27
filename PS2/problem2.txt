@@ -1,0 +1,32 @@
+2 a) 
+
+(Using touch -t  representation to represent human readable form) 
+When the file is first created using echo "PROCRASTINATION" > testfile st_atime, st_mtime, and st_ctime
+will all be 202209211200.00. When the command "cat testfile" is ran st_atime will change to 202209211210.00 as the file 
+is being read from at this time. Nothing else is being done to st_mtime and st_ctime will remain the same. When the command 
+"touch -m -t 09210000.00 testfile", st_mtime will be overwritten and changed to 202209210000.00 and st_mtime will change to 202209211400.00 as this
+value cannot be changed by touch. st_atime will remain the same as the time it was last read 202209211210.00.
+
+
+b)
+ i) Since there is no journaling in place, fsck must be ran in order to recover any corrupted data in a filesystem.This program does a recursive exploration of the filesystem in question and checks for inconsistencies between 
+the view from the actually node with the free block map and inode table. (ii) Fsck will find errors that are associated with the write operations that were not consitently handled in the filesystem. For example, an inode can be marked as non-free by changing its type field of S_IFREG while failing to mark it as non-free in the bitmap. This is a problem because if unfixed, an inode that is not free will be viewed as free by the kernel. Fsck can find this inconsistenty and in this case, 
+put the contents that were written into the inode into  /lost+found as there is no path name associated with it. (iii) It would take a long 
+time with a 2TB volume of 1,000,000 nodes because fsck must recursively go through every single node and unallocated space and especially with such 
+a large volume size it would take a very long time. This is slow because visiting all the nodes and unallocated space indivually is a very slow process. 
+(iv) If journaling is employed, first the kernel sees that the volume is dirty and examines each journal entry examining the occurances of a pairing of BEGIN and COMMIT transactions.
+When there is BEGIN with no respective COMMIT nothing happened, but if there is a BEGIN with a COMMIT the data is rewritten just in case something wrong happened.
+This process is much faster than fsck as there is no requirement of a "block-by-block" examination of the whole filesystem.    
+c) 
+The specific cache mechanism that is affecting your viewing experience is File Data Caching. Since we can assume that your "favorite part"
+consists of a small read this part of the video becomes cached to memory after the first viewing. Since it is now reading from memory, the rewind 
+and the replaying of the video should be viewed with less lag. Since the beginning of the video was never played, this area was never cached in accordance
+to file data caching. As the file is being read directly from the harddisk, this would explain why the beginning is laggy. 
+
+
+d) The second one takes longer because /A/B/X/Y is probably contained in a different volume from /A/B/C/Q. When the operands of mv are in the 
+same volume the rename system call is simply used to "move" the file from one spot to another (almost the same as hard-linking and unlinking but this would be non-atomic).
+This operation is fast as there is no movement of data required. However, when mv is executed and the two locations are on different volumes, 
+cp /A/B/X/Y  /A/B/C/Q; rm /A/B/X/Y, both occur non-atomicly. The cp requires the actually movement of data from one volume to another which takes 
+longer than a simple rename. In addition, if the /A/B/X/Y is contained on an SSD while /A/B/C/Q would be on an HDD the length of time required for 
+the mv operation would become even more apparent.
