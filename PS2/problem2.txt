@@ -4,7 +4,7 @@
 When the file is first created using echo "PROCRASTINATION" > testfile st_atime, st_mtime, and st_ctime
 will all be 202209211200.00. When the command "cat testfile" is ran st_atime will change to 202209211210.00 as the file 
 is being read from at this time. Nothing else is being done to st_mtime and st_ctime will remain the same. When the command 
-"touch -m -t 09210000.00 testfile", st_mtime will be overwritten and changed to 202209210000.00 and st_mtime will change to 202209211400.00 as this
+"touch -m -t 09210000.00 testfile", st_mtime will be overwritten and changed to 202209210000.00 and st_ctime will change to 202209211400.00 as this
 value cannot be changed by touch. st_atime will remain the same as the time it was last read 202209211210.00.
 
 
