@@ -1,0 +1,47 @@
+clc
+clear
+close all
+%% Homework 1 John Pluchino
+
+%% 1
+magn = abs(7+24j);
+ipow = j^(j^j);
+isec = asec(5- j);
+pos_root = (-(-4)+sqrt((-4)^2 -(4*5*-3)))/(2*5);
+E = [magn ipow isec pos_root]
+
+%% 2
+A = [ real(E(2)) real(E(3)) ; imag(E(2)) imag(E(3)) ; abs(E(2)) abs(E(3)) ; angle(E(2)) angle(E(3))  ]
+
+%% 3
+B = mean(A,2)
+
+%% 4
+A + B;
+%A + B adds each column of A with the value of its respective row in the
+%column vector B. This is done through a a broadcast of B to allow it to be added to A by traditional matrix addition.
+
+A + 1;
+%This performs elementwise addition, adding 1 to each element of the
+%matrix. This is done through  a broadcast of 1 to allow it be added by A
+%by traditional matrix addition.
+
+%A+E;
+%This is invalid as the matrixes sizes are incompotable as E is a row
+%vector of 1x4 with attempted to be added with the a 4x2 matrix. No
+%broadcast is taking place
+
+%% 5
+reg_transp = transpose(A)*B %(a)
+elem_sub = B - 3 %(b)
+C = repmat(A,1,2) %(c)
+reg_tranpd = C - A*transpose(A) %(d)
+elem_multc = C.*C %(e)
+elem_multd = C.^2 %(f)
+c_squared = C^2 %(g)
+D = eye(4)   
+trace_h = trace(C-D)    %(h)
+
+%% 6
+vec_1 = linspace(pi,exp(1),1000);
+vec_2 = 0:1/(7*10^6):2;
