@@ -9,14 +9,28 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+int first_flag = 0;
 //int decode() to do take in statname
-char walk(char *pathname) {
+int walk(char *pathname) {
+ 
+
+  //lstat in the beginning 
     struct stat statbuf;
     DIR * dir;
     int length;
     char full_path[PATH_MAX + 1];
-    strcpy(full_path, pathname);
+     if(lstat(pathname, &statbuf) < 0) {
+     return -1;
+     }
+  if(S_ISDIR(statbuf.st_mode) == 0) {
+      return 1;
+  }
+  if(!first_flag) {
+  printf("%s", pathname);
+  first_flag = 1;
+  }
     dir = opendir (pathname);
+    strcpy(full_path, pathname);
   strcat( full_path, "/" ); //error check
     struct dirent *openeddir;
  while((openeddir = readdir(dir)) != NULL){
@@ -29,18 +43,18 @@ char walk(char *pathname) {
       strcat(local_path, file);
         lstat(local_path, &statbuf);
        printf("%s", local_path);
-     if (S_ISDIR(statbuf.st_mode)) {
-        printf("is a directory \n" );
-          
-         walk(local_path);
+     if (walk(local_path) != 1) {
+      break;
+       
   }
+   
 }
     closedir(dir);
 }
 
 int main(int argc, char *argv[])
 {
-    char * pathname = "/home/";
+    char * pathname = "./testtrav/";
     walk(pathname);
     return 0;
 }
