@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
-
+//int decode() to do take in statname
 char walk(char *pathname) {
     struct stat statbuf;
     DIR * dir;
@@ -17,7 +17,7 @@ char walk(char *pathname) {
     char full_path[PATH_MAX + 1];
     strcpy(full_path, pathname);
     dir = opendir (pathname);
-  strcat( full_path, "/" );
+  strcat( full_path, "/" ); //error check
     struct dirent *openeddir;
  while((openeddir = readdir(dir)) != NULL){
      char * file = openeddir->d_name;
@@ -40,7 +40,7 @@ char walk(char *pathname) {
 
 int main(int argc, char *argv[])
 {
-    char * pathname = "./testtrav";
+    char * pathname = "/home/";
     walk(pathname);
     return 0;
 }
