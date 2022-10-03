@@ -2,6 +2,7 @@
     "files.associations": {
         "unistd.h": "c",
         "stat.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "sysmacros.h": "c"
     }
 }
