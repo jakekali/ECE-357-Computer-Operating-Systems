@@ -209,6 +209,7 @@ int main(int argc, char *argv[])
    switch (opt) 
    {
     case 'm':
+
       MTIME = atoi(optarg);
       break;
     case 'u':
@@ -237,6 +238,8 @@ if((argc - optind) > 1) {
   while(optind < argc) {
   orig_path =  argv[optind++];
   }
+  if(orig_path[strlen(orig_path) - 1] == '/') 
+  orig_path[strlen(orig_path) - 1] = '\0';
 walk(orig_path);
 
 }
