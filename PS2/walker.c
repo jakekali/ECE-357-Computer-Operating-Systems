@@ -243,7 +243,7 @@ if(optind == argc) {
   while(optind < argc) {
   orig_path =  argv[optind++];
   }
-  if(strcmp(orig_path, "\\") == 0) {
+  if(strcmp(orig_path, "/") == 0) {
     walk(orig_path);
     return 0;
   }
