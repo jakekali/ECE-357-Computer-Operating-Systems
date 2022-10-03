@@ -77,10 +77,10 @@ if(statbuf->st_mode & S_ISVTX ){
 }
 
 if((pwd = getpwuid(statbuf->st_uid)) == NULL) {
-  fprintf(stderr, "UID not found");
+  fprintf(stderr, "UID not found. \n");
 }
 if((grp = getgrgid(statbuf->st_gid)) == NULL) {
-  fprintf(stderr, "GID not found");
+  fprintf(stderr, "GID not found. \n");
 }
 int minor_num = 0;
 int major_num = 0;
@@ -129,16 +129,16 @@ if(UID != -3) {
   }
 }
 
-printf("%d \t", inumber);
-printf("%d", block_size);
+printf("  %d \t", inumber);
+printf("%3d", block_size);
 printf(" %s\t", perms);
-printf("   %d", hlinks);
+printf("   %4d", hlinks);
 printf(" %s\t", pwd->pw_name);
 printf("%s\t", grp->gr_name);
 if(S_ISBLK(statbuf->st_mode) || S_ISCHR(statbuf->st_mode)) {
   printf("%d ,  %d  ", major_num, minor_num );
 } else {
-  printf("%4d  ", size);
+  printf("%5d  ", size);
 }
 printf("%s ", print_time);
 printf("%s", path);
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
       if(isdigit(optarg[0])){
         UID = atoi(optarg);
         if(getpwuid(UID) == NULL) {
-          fprintf(stderr, "UID %d not found", UID);
+          fprintf(stderr, "UID %d not found.\n", UID);
           return -1;
         } 
         break;
@@ -226,22 +226,30 @@ int main(int argc, char *argv[])
       }
       UID_N = optarg;
       if(getpwnam(UID_N) == NULL) {
-        fprintf(stderr, "Username  %s not found.", UID_N);
+        fprintf(stderr, "Username  %s not found. \n", UID_N);
         return -1;
       }
       break;
    }
  }
 if((argc - optind) > 1) {
-  fprintf(stderr, "Error : Too many arguments \n");
+  fprintf(stderr, "Error : Too many arguments. \n");
   return -1;
+}
+if(optind == argc) {
+  walk(".");
+  return 0;
 }
   while(optind < argc) {
   orig_path =  argv[optind++];
   }
+  if(strcmp(orig_path, "\\") == 0) {
+    walk(orig_path);
+    return 0;
+  }
   if(orig_path[strlen(orig_path) - 1] == '/') 
   orig_path[strlen(orig_path) - 1] = '\0';
 walk(orig_path);
-
+return 0;
 }
 
