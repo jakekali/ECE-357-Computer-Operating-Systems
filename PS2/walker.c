@@ -92,12 +92,12 @@ if(S_ISBLK(statbuf->st_mode) || S_ISCHR(statbuf->st_mode)) {
 } else {
    size = statbuf->st_size;
 }
-time_t time = (statbuf->st_mtim).tv_sec;
+time_t timem = statbuf->st_mtime;
 
 
 
 
-char * print_time = ctime(&time);
+char * print_time = ctime(&timem);
 
 if(S_ISLNK(statbuf->st_mode)) {
   char buff[2*(PATH_MAX + 1)];
@@ -113,7 +113,8 @@ if(S_ISLNK(statbuf->st_mode)) {
 print_time[strlen(print_time) -1 ] = '\0';
 
 if(MTIME != -1){
-  if(time >= MTIME){
+  time_t cur_time = time(NULL);
+  if(cur_time - timem <= MTIME){
       return 0;
   }
 }
