@@ -1,8 +1,8 @@
-1a. f1 is stored in the text section since it is executable code of the program. i is an initializeed static int so it is in the data region of memory 
-since the static keyword means it is treated globally. ws is a local variable so it is stored inside the stack.
+1a. f1 is stored in the text section since it is executable code of the program. "i" is an initializeed static int so it is in the data region of memory 
+since the static keyword means it is treated globally. "ws" is a local variable so it is stored inside the stack.
 
-b. When the program first run the first f1() causes 10 to printed out first. Next, if(fork()==0) (which means it is the child process) f1()
-is called again which would print out 11 (as int i is static). Next the parents f1() call occured and prints out 11 because the variables are now in a completely different space.
+b. When the program first run the first f1() causes 10 to printed out first. Next, if(fork()==0) (which means it is int the child process) f1()
+is called again which would print out 11 (as int i is static). Next the parent's f1() call occured and prints out 11.
 Lastly, the child f1() got called and printed out 12. This happened every time I ran it. 10, 11, 11, 12 However, it is undetermined whether the parent or the child 
 will happen first.
 
@@ -10,12 +10,11 @@ c. As mentioned prreviously, it is undetermined whether the parent or child will
 child second f1() gets called before the parent than the output would be 10, 11, 12, 11.
 
 d) The return of echo $? is 255 because wait(&ws) waits for the child process to terminate to continue exexucution. If this is true, wait(&ws) will set ws
-to 65820 (at least on my machine). This is macro'ed with WIFEXITED(wstatus). Where this becomes true if the child terminated normally. 65820 >> 8 becomes 255 which is why the program returns 255. 
+to 65820 (at least on my machine). This is macro'ed with WIFEXITED(ws) where this becomes true if the child terminated normally. 65820 >> 8 becomes 255 which is why the program returns 255. 
 
-2a) Since buf[16] is a undeclared global variable it is put into bss which means that it  is automatically set to 0. So we know the char[] should be empty no matter what.
+2a) Since char buf[16] is a undeclared global variable it is put into bss which means that it  is automatically set to 0. So we know that char buf[16]  should be empty no matter what.
 This means that it should print XY. 
 
-2b) The program "osps3.py" next occupies the next address space. The argument vector of the program is "myinput.txt" as the next NULL indicates termination. 
+2b) The program "/tmp/osps3.py" next occupies the next address space. The argument vector of the program is ["/usr/bin/python" ,"osps3.py", "myinput.txt"] as the next NULL indicates termination and the #! indicates argv[0] as the interpreter.
 
-2c) execvp won't evaluate environment variables, we can use getenv to get environment variables. 
-getenv("PATH")
+2c) execvp won't evaluate environment variables, we can use getenv to get environment variables. For example, getenv("PATH") can be used to get $PATH.
