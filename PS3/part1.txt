@@ -17,6 +17,5 @@ This means that it should print XY.
 
 2b) The program "osps3.py" next occupies the next address space. The argument vector of the program is "myinput.txt" as the next NULL indicates termination. 
 
-2c) getenv
-
-
+2c) execvp won't evaluate environment variables, we can use getenv to get environment variables. 
+getenv("PATH")
