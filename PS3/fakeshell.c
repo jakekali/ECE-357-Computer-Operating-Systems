@@ -2,6 +2,9 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include <fcntl.h>
+#include <linux/limits.h>
+
+char *current_path[PATH_MAX];
 
 int main(int argc, char **argv[])
 {
@@ -10,6 +13,9 @@ int main(int argc, char **argv[])
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
+
+    // Get the current path
+    getcwd(current_path, PATH_MAX);
 
     while ((read = getline(&line, &len, stdin)) != -1) 
     {
@@ -30,6 +36,26 @@ int main(int argc, char **argv[])
         }
         args[i] = NULL;
 
+
+        // Check for built in commands
+        if(strcmp(args[0], "cd") == 0)
+        {
+            if(args[1] == NULL)
+            {
+                chdir(getenv("HOME"));
+            }
+            else
+            {
+                chdir(args[1]);
+            }
+            getcwd(current_path, PATH_MAX);
+        }
+        else if(strcmp(args[0], "exit") == 0)
+        {
+            exit(0);
+        }
+
+        
         // Execute the command
         if(fork() == 0)
         {
