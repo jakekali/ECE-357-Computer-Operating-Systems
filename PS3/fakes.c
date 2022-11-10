@@ -1,4 +1,3 @@
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -106,15 +105,6 @@ int fakelex(char * token) {
 				  return 0;
 	} 
 }
-int exitcode(int status) {
-	if(WIFEXITED(status)) {
-		return WEXITSTATUS(status);
-	} 
-	else if  (WIFSIGNALED(status)){
-		return LOW8BIT(status);
-	}
-	return -1; //should not be possible
-}
 char **tokenizer(char * line, int len) {
 	
 	char * token;
@@ -135,37 +125,25 @@ char **tokenizer(char * line, int len) {
 	}
 	return tokens;
 }
-
 void execute(char **tokens) {
-	
+
 	struct rusage usage;
 	struct timeval current_time;
 	struct timeval end_time;
-	gettimeofday(&current_time, NULL);      
+	gettimeofday(&current_time, NULL);       
   
 	int pid = fork();
-	if(pid == 0) {
-			int i = 0;
-			while(iotokens[i]) {
-				if(fileredirector(fakelex(iotokens[i]), iotokens[i]) != -1)
-				{
-					i++;
-				} 
-				
-			}
-			
-			if(execvp(tokens[0], tokens) == -1) {
-				fprintf(stderr, "Error :");
-				if(errno == ENOENT) {
-					fprintf(stderr, "Command not found :%s \n", tokens[0]);
-				} else {
-					fprintf(stderr, " : %s \n", strerror(errno));
-				}
-				exit(127);
-			}
+if(fork() == 0) {
+        int i = 0;
+        while(iotokens[i]) {
+            fileredirector(fakelex(iotokens[i]), iotokens[i]);
+            i++;
+        }
+		if(execvp(tokens[0], tokens) == -1) {
+			fprintf(stderr, "Error : %s \n", strerror(errno));
 		}
-
-		if(wait3(&status, 0, &usage) < 0) {
+	}
+if(wait3(&status, 0, &usage) < 0) {
 			fprintf(stderr, "Error with waiting for child process statistics : %s", strerror(errno));
 		} 
 			gettimeofday(&end_time, NULL);
@@ -190,7 +168,6 @@ void execute(char **tokens) {
 	for(int i = 0; iotokens[i]; i++){
 		iotokens[i] = NULL;
 	}
-		
 }
 
 
@@ -209,8 +186,7 @@ int main(int argc, char *argv[]) {
 		if(fp == stdin)  {
 			printf("%% ");
 		}
-		if(getline(&line, &len, fp) != -1) 
-		{
+		if(getline(&line, &len, fp) != -1) {
 			if(line[0] == '#' || line[0] == '\n')
 			{
 				continue;
@@ -218,64 +194,14 @@ int main(int argc, char *argv[]) {
 
 			line[strlen(line) -1] = '\0';   
 			tokens = tokenizer(line, len);
-						
-			if(strcmp(tokens[0], "cd") == 0)
-        	{
-				int error = 0;
-            	if(tokens[1] == NULL)
-				{
-					error = chdir(getenv("HOME"));
-				} else
-				{
-					error = chdir(tokens[1]);
-				}
+			execute(tokens);
 
-				if(error != 0){
-					fprintf(stderr, "Error: %s : %s \n", strerror(errno), tokens[1]);
-				}
-				continue;
+		} else {
 
-        	}else if (strcmp(tokens[0], "exit") == 0)
-			{
-				if(tokens[1] != NULL)
-				{
-			if(fp != stdin) {
-				fclose(fp);
-			}
-					exit(atoi(tokens[1]));
-				} else {
-			if(fp != stdin) {
-				fclose(fp);
-			}
-					exit(exitcode(status));
-				}
-			}else if (strcmp(tokens[0], "pwd") == 0){
-				char currpath [PATH_MAX];
-				memset(currpath, PATH_MAX, 0);
-				if(!getcwd(currpath, PATH_MAX)){
-					perror("unable to get access current directory");
-					continue;
-				}
-				printf("%s\n",currpath);
-				continue;
-			}
-
-		execute(tokens);
-		free(tokens);
-		
-
-		} else 
-		{
-
-			if(fp != stdin) {
-				fclose(fp);
-			}
-			exit(exitcode(status));
+			exit(0);
 		}
 
 	}
 
 	return 0;
 }
-
-

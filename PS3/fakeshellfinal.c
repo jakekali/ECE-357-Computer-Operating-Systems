@@ -63,12 +63,12 @@ int fileredirector(int type, char *iotoken) {
 	if((fd = open(iotoken+offset, mode, 0666)) < 0) 
 	{
 		fprintf(stderr, "Error no such file or directory : %s \n", iotoken);
-		return -1;
+		return -2;
 	}
     if(dup2(fd, orig) < 0) 
 	{
         fprintf(stderr, "Error with redirection %s", strerror(errno));
-        return -1;
+        return -2;
     }
     close(fd);
 	return -1;
@@ -119,7 +119,7 @@ char **tokenizer(char * line, int len) {
 	
 	char * token;
 	char **tokens = malloc(100 * sizeof(char *));
-	token = strtok(line, " ");
+	token = strtok(line, "\t ");
 	int pos_io = 0;
 	int pos = 0;
 	while(token != NULL) {
@@ -131,7 +131,7 @@ char **tokenizer(char * line, int len) {
 			tokens[pos] = token;
 			pos++;
 		}
-		token = strtok(NULL, " ");
+		token = strtok(NULL, "\t ");
 	}
 	return tokens;
 }
@@ -141,16 +141,17 @@ void execute(char **tokens) {
 	struct rusage usage;
 	struct timeval current_time;
 	struct timeval end_time;
-	gettimeofday(&current_time, NULL);      
-  
+	gettimeofday(&current_time, NULL);
+
 	int pid = fork();
 	if(pid == 0) {
 			int i = 0;
 			while(iotokens[i]) {
-				if(fileredirector(fakelex(iotokens[i]), iotokens[i]) != -1)
-				{
-					i++;
-				} 
+				if(fileredirector(fakelex(iotokens[i]), iotokens[i]) != -2) {
+					i++;		
+				} else {
+					exit(1);
+				}	
 				
 			}
 			
@@ -171,7 +172,7 @@ void execute(char **tokens) {
 			gettimeofday(&end_time, NULL);
 		fprintf(stderr, "Child process %d ", pid);
 		if(WIFEXITED(status)) {
-			fprintf(stderr, " exited normally with return %d\n", WEXITSTATUS(status));
+			fprintf(stderr, "exited normally with return %d\n", WEXITSTATUS(status));
 		} else if(WIFSIGNALED(status)) {
 			if(WCOREDUMP(status)) {
 				fprintf(stderr ,"exited with signal %d ", WTERMSIG(status));

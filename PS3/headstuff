@@ -2,6 +2,8 @@ a.out
 eytan
 fakeshell.c
 GROUP
+head
+headstuff
 outls
 output
 part1.txt
@@ -9,4 +11,5 @@ test
 test2.c
 test.c
 test.sh
+testshell
 testshell.c
