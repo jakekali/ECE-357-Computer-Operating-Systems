@@ -31,14 +31,14 @@ int main(int argc, char *argv[]) {
     pipe(fd_g2mr);
     // TODO Check for Errors
 
-    pid_t child1, child2;
+    pid_t grepChild, moreChild;
 
     if((pipe(fd_m2g) == -1) || (pipe(fd_g2mr) == -1)){
         perror("Pipe");
         return -1;
     }
 
-    switch(child1 = fork()){
+    switch(grepChild = fork()){
         case -1:
             perror("Fork");
             return -1;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
             break;
     }
 
-    switch(child2 = fork()){
+    switch(moreChild = fork()){
         case -1:
             perror("Fork");
             return -1;
@@ -87,17 +87,6 @@ int main(int argc, char *argv[]) {
 
             // Executing MORE
             execlp("more", "more", NULL);
-
-            // // read from fd_g2mr[READ] and write to STDOUT
-            // while(1){
-            //     char buffer[1024];
-            //     int n = read(fd_g2mr[READ], buffer, 1024);
-            //     if(n == 0){
-            //         break;
-            //     }
-            //     buffer[n] = '\0';
-            //     printf("MORE: %s", buffer);
-            // }
 
             // Closing used pipes
             close(fd_g2mr[READ]);
