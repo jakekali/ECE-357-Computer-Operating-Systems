@@ -35,14 +35,17 @@ void nextFile(int signum){
     if (fd_file != -1){
         close(fd_file);
     }
+    close(fd_m2g[WRITE]);
 
     if (signum != SIGPIPE) {
-        kill(grepChild, SIGKILL);
-        kill(moreChild, SIGKILL);
-    }
-   
+       kill(grepChild, SIGKILL);
+       kill(moreChild, SIGKILL);
+    } 
+    waitpid(grepChild, NULL, 0);
+      waitpid(moreChild, NULL, 0);
     
-    close(fd_m2g[WRITE]);
+
+
     i++;
 
     longjmp(int_jb, 1);
@@ -181,16 +184,19 @@ sigsetjmp(int_jb, 1);
             bytes_wrote += write(fd_m2g[WRITE], buffer, n);        
         }
 
-        wait(NULL);
-        wait(NULL);
+     
+
 
         close(fd_file);
         close(fd_m2g[WRITE]);
+        wait(NULL);
+        wait(NULL);
        
         i++;
     }
-   // close(fd_file);
-    // Closing used pipes
+   close(fd_file);
+    // Closing used pipe
+    close(fd_m2g[WRITE]);
     wait(NULL);
     wait(NULL);
 
