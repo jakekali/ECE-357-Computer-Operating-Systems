@@ -50,17 +50,12 @@ int main(int argc, char *argv[]) {
             close(fd_m2g[WRITE]);
             close(fd_g2mr[READ]);
 
-            // read from fd_m2g[READ] and write to fd_g2mr[WRITE]
-            while(1){
-                char buffer[1024];
-                int n = read(fd_m2g[READ], buffer, 1024);
-                if(n == 0){
-                    break;
-                }
-                write(fd_g2mr[WRITE], buffer, n);
-                buffer[n] = '\0';
-                printf("GREP: %s", buffer);
-            }
+            // Redirecting STDIN and STDOUT
+            dup2(fd_m2g[READ], STDIN_FILENO);
+            dup2(fd_g2mr[WRITE], STDOUT_FILENO);
+
+            // Executing GREP
+            execlp("grep", "grep", pattern, NULL);
 
             // Closing used pipes
             close(fd_m2g[READ]);
@@ -87,16 +82,22 @@ int main(int argc, char *argv[]) {
             close(fd_m2g[WRITE]);
             close(fd_g2mr[WRITE]);
 
-            // read from fd_g2mr[READ] and write to STDOUT
-            while(1){
-                char buffer[1024];
-                int n = read(fd_g2mr[READ], buffer, 1024);
-                if(n == 0){
-                    break;
-                }
-                buffer[n] = '\0';
-                printf("MORE: %s", buffer);
-            }
+            // Redirecting STDIN
+            dup2(fd_g2mr[READ], STDIN_FILENO);
+
+            // Executing MORE
+            execlp("more", "more", NULL);
+
+            // // read from fd_g2mr[READ] and write to STDOUT
+            // while(1){
+            //     char buffer[1024];
+            //     int n = read(fd_g2mr[READ], buffer, 1024);
+            //     if(n == 0){
+            //         break;
+            //     }
+            //     buffer[n] = '\0';
+            //     printf("MORE: %s", buffer);
+            // }
 
             // Closing used pipes
             close(fd_g2mr[READ]);
@@ -117,7 +118,6 @@ int main(int argc, char *argv[]) {
     // read from a file and write to fd_m2g[WRITE]
     while(i < argc){
         char *filename = argv[i];
-        printf("File: %s\n", filename);
         fd_file = open(filename, O_RDONLY);
         if(fd_file == -1){
             perror("Open");
