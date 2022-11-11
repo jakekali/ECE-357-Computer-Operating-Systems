@@ -5,7 +5,8 @@
 #include <fcntl.h>  
 #include <unistd.h>
 #include <string.h>
-
+#include <wait.h>
+#include <stdlib.h>
 
 int nextFile(int signum){
 
@@ -13,6 +14,10 @@ int nextFile(int signum){
 
 int i = 2;
 int fd_file = -1;
+
+#define READ 0
+#define WRITE 1
+
 
 int main(int argc, char *argv[]) {
 
@@ -25,61 +30,119 @@ int main(int argc, char *argv[]) {
     pipe(fd_m2g);
     pipe(fd_g2mr);
     // TODO Check for Errors
-   
 
-    
-    if(fork()){
-        if(fork()){
-            printf("SOME BS IN THE PARENT");
-            write(fd_m2g[1], "bufbufbufbufbufbuf", 4);
-            //Parent
-           // close(fd_m2g[0]);
-            // close(fd_g2mr[1]);
-            // close(fd_g2mr[0]);
+    pid_t child1, child2;
 
-            // for(; argv[i]; i++){
-             //   fd_file = open(argv[i], O_RDONLY);
-                // char buf[4096];
-                // while(read(fd_file, buf ,4096)){
-                    // write(fd_m2g[1], "buf", 4);
-                    // memset(buf, '\0', 4096);
-                // }
-             //   close(fd_file);
-            // }
-            // close(fd_m2g[1]);
-        }else{
-            // // MORE CHILD
-            // close(fd_m2g[1]);
-            // close(fd_m2g[0]);
-            // close(fd_g2mr[1]);
-
-            // dup2(fd_g2mr[0], STDIN_FILENO);
-                char buf1[4096];
-                memset(buf1,'\0',4096);
-                read(fd_m2g[0], buf1, 4096);
-                printf("%s", buf1);
-
-            // char *arg_list[] =  {"more", NULL};
-            // execvp("more", arg_list);
-        }
-    }else{
-        // GREP CHILD
-        close(fd_m2g[1]);
-        close(fd_g2mr[0]);
-
-        // dup2(fd_m2g[0], STDIN_FILENO);
-        // dup2(fd_g2mr[1], STDOUT_FILENO);
-
-        char buf1[4096];
-        memset(buf1,'\0',4096);
-        read(fd_m2g[0], buf1, 4096);
-        write(fd_g2mr[1], buf1, 4096);
-
-
-        // char *arg_list[] =  {"grep", pattern ,NULL};
-        // execvp("grep", arg_list);
-
-
+    if((pipe(fd_m2g) == -1) || (pipe(fd_g2mr) == -1)){
+        perror("Pipe");
+        return -1;
     }
+
+    switch(child1 = fork()){
+        case -1:
+            perror("Fork");
+            return -1;
+
+        case 0: // Child 1: GREP
+            printf("Child 1: GREP\n");
+
+            // Closing unused pipes
+            close(fd_m2g[WRITE]);
+            close(fd_g2mr[READ]);
+
+            // read from fd_m2g[READ] and write to fd_g2mr[WRITE]
+            while(1){
+                char buffer[1024];
+                int n = read(fd_m2g[READ], buffer, 1024);
+                if(n == 0){
+                    break;
+                }
+                write(fd_g2mr[WRITE], buffer, n);
+                buffer[n] = '\0';
+                printf("GREP: %s", buffer);
+            }
+
+            // Closing used pipes
+            close(fd_m2g[READ]);
+            close(fd_g2mr[WRITE]);
+            // Exit
+            exit(0);
+
+        default: 
+            // Parent - DO NOTHING
+            printf("Parent: DO NOTHING\n");
+            break;
+    }
+
+    switch(child2 = fork()){
+        case -1:
+            perror("Fork");
+            return -1;
+
+        case 0: // Child 2: MORE
+            printf("Child 2: MORE\n");
+
+            // Closing unused pipes
+            close(fd_m2g[READ]);
+            close(fd_m2g[WRITE]);
+            close(fd_g2mr[WRITE]);
+
+            // read from fd_g2mr[READ] and write to STDOUT
+            while(1){
+                char buffer[1024];
+                int n = read(fd_g2mr[READ], buffer, 1024);
+                if(n == 0){
+                    break;
+                }
+                buffer[n] = '\0';
+                printf("MORE: %s", buffer);
+            }
+
+            // Closing used pipes
+            close(fd_g2mr[READ]);
+            // Exit
+            exit(0);
+
+        default: 
+            // Parent - DO NOTHING
+            printf("Parent: DO NOTHING\n");
+    }
+
+    // Closing unused pipes
+    close(fd_g2mr[READ]);
+    close(fd_g2mr[WRITE]);
+    close(fd_m2g[READ]);
+
+
+    // read from a file and write to fd_m2g[WRITE]
+    while(i < argc){
+        char *filename = argv[i];
+        printf("File: %s\n", filename);
+        fd_file = open(filename, O_RDONLY);
+        if(fd_file == -1){
+            perror("Open");
+            return -1;
+        }
+
+        while(1){
+            char buffer[4096];
+            int n = read(fd_file, buffer, 4096);
+            if(n == 0){
+                break;
+            }
+            write(fd_m2g[WRITE], buffer, n);
+            buffer[n] = '\0';
+        }
+        close(fd_file);
+        i++;
+    }
+    
+
+    // Closing used pipes
+    close(fd_m2g[WRITE]);
+ 
+
+    wait(NULL);
+    wait(NULL);
 
 }
