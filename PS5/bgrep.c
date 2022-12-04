@@ -30,12 +30,12 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
 	} else {
 		fd = 0;
 		filename = "<standard input>";
-
 	}
+
 	int fsize;
 	fsize = lseek(fd, 0, SEEK_END);
-	if ((file=mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0))==MAP_FAILED)
-	{ fprintf(stderr, "Error with mmap : %s \n", strerror(errno));
+	if ((file=mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0))==MAP_FAILED){   
+        fprintf(stderr, "Error with mmap : %s \n", strerror(errno));
 		return -1;
 	}
 	file_glob = filename;
@@ -50,19 +50,23 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
 	while(loc = memmem(file, fsize, pattern, pattern_size)){
 		int diff = loc - file_start;
 		flag_pattern_found = 0;
-		if(pattern_context == 0){
-			printf("%s:%d \n", filename, diff);
-		}
+        
+        printf("%s:%d", filename, diff);
+
+        if(pattern_context == 0) {
+            printf("\n");
+        }
 
 		if(pattern_context) {
-			printf("%s:%d", filename, diff);
 			char *beg;
 			int end;
 			char * window = calloc(1, pattern_context + pattern_size + pattern_context + 1);
+            //check if beggining of file is beyond pattern context
 			if ((beg = loc - pattern_context )< file_start){
 				beg = file_start;
 			}
 			end = pattern_size + 2 * pattern_context;
+            //check if end of file is beyond pattern context
 			if(pattern_context > loc - beg) {
 				end = loc - beg + pattern_size + pattern_context; 
 
@@ -70,11 +74,6 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
 			if(beg + end > file_end) {
 				end = file_end - beg;
 			}
-
-
-			//  if (diff + pattern_context + pattern_size + pattern_context > fst){
-			//       end = pattern_context + pattern_size +1;
-			//   }
 			printf(" ");
 			memcpy(window, beg, end);
 			for(int i = 0; i < end; i++) {
@@ -88,7 +87,7 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
 			printf(" ");
 			for(int i = 0; i < end; i++) {
 				{
-					printf(" %02X ", file[i] & 0xFF);
+					printf(" %02X ", window[i] & 0xFF);
 				}
 			}
 			printf("\n");
@@ -171,8 +170,6 @@ int main(int argc, char * argv[])
 	sigsetjmp(int_jb, 1);
 	for (; optind < argc; optind++){ 
 		filesPresent = 1;
-
-		printf("We are searching for pattern %s, in file: %s with context bytes %d \n", p, argv[optind], pattern_context);
 		int ret_no;
 		if(ret_no = processFile(p, fsize, argv[optind], pattern_context)) {
 			free(p);
