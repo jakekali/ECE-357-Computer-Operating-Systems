@@ -11,33 +11,45 @@
 #include <string.h>
 #include <signal.h>
 #include<setjmp.h>
+#include<errno.h>
+
 
 jmp_buf int_jb;
-
-
+    int fd; //fd of open file
+    char *file_glob; 
 int processFile(char * pattern, int pattern_size, char *filename, int pattern_context) {
     // mmap the input file
     char * file;
-    int fd = open(filename, O_RDONLY);
+
+if(filename) {
+    fd = open(filename, O_RDONLY);
     if (fd == -1) {
-        printf("Error input opening file");
+        fprintf(stderr, "Error opening input file %s : %s \n", filename, strerror(errno));
         return -1;
     }
-
+} else {
+    fd = 0;
+    filename = "<standard input>";
+    
+}
     int fsize;
     fsize = lseek(fd, 0, SEEK_END);
     if ((file=mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0))==MAP_FAILED)
-        perror("oops");
-           
+       { fprintf(stderr, "Error with mmap : %s \n", strerror(errno));
+        return -1;
+       }
+           file_glob = filename;
+
 
 
     char * file_start = file;
     char * file_end = file + fsize;
     int fst = fsize;
     char *loc = NULL;
+    int flag_pattern_found = 1;
     while(loc = memmem(file, fsize, pattern, pattern_size)){
         int diff = loc - file_start;
-
+            flag_pattern_found = 0;
             if(pattern_context == 0){
                 printf("%s:%d \n", filename, diff);
             }
@@ -69,13 +81,15 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
                  if(isprint(window[i]))  {
                  printf(" %c ", window[i]);
                  } else {
-                    printf( "? ", loc[i]);
+                    printf( " ? ", window[i]);
                  }
                  
             }
             printf(" ");
              for(int i = 0; i < end; i++) {
-                  printf(" %X ", file[i] & 0xFF);
+                {
+                  printf(" %02X ", file[i] & 0xFF);
+                }
             }
             printf("\n");
            
@@ -85,12 +99,15 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
         
      
     }
+    close(fd);
 
-    return 0;
+
+    return flag_pattern_found;
 }
 
 void sigHandles(int signum){
-    optind++ ;
+    optind++;
+    fprintf(stderr, "SIGBUS received while processing %s \n", file_glob);
     siglongjmp(int_jb, 1);
 
 }
@@ -104,7 +121,11 @@ int main(int argc, char * argv[])
     int patternFileFlag = 0;
     char pattern_file[PATH_MAX];
     int pattern_context = 0;
+    if(argc == 1) {
+        fprintf(stderr, "Not enough input arguments \n.");
+        return -1;
 
+    }
     while ((c = getopt(argc, argv, "p:c:")) != -1)
     {
         switch (c)
@@ -125,8 +146,8 @@ int main(int argc, char * argv[])
     if(patternFileFlag){
         // mmap the pattern file
         // open the file for reading
-        int fd = open(pattern_file, O_RDONLY);
-        if (fd == -1) {
+        int fd_pat = open(pattern_file, O_RDONLY);
+        if (fd_pat == -1) {
             printf("Error opening file");
             return -1;
             }
@@ -148,26 +169,29 @@ int main(int argc, char * argv[])
     }
     int filesPresent = 0;
     sigsetjmp(int_jb, 1);
-    for (; optind < argc; optind++){    
+    for (; optind < argc; optind++){ 
         filesPresent = 1;
+    
         printf("We are searching for pattern %s, in file: %s with context bytes %d \n", p, argv[optind], pattern_context);
-        processFile(p, fsize, argv[optind], pattern_context);
+        int ret_no;
+        if(ret_no = processFile(p, fsize, argv[optind], pattern_context)) {
+           free(p);
+                return ret_no;
+                
+        }
     }
     if(!filesPresent){
-        int fd = open(STDIN_FILENO, O_RDONLY);
-        if (fd == -1) {
-            printf("Error opening file");
-            return -1;
-            }
-
-        fsize = lseek(fd, 0, SEEK_END);
-    
-
-        if ((p=mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0))==MAP_FAILED)
-            perror("oops");
-
-        processFile(p, fsize, argv[optind], pattern_context);
+        int ret_no;
+         if(ret_no = processFile(p, fsize, NULL, pattern_context)) {
+           free(p);
+                return ret_no;
+                
+        }
+      
     }
+    
+    free(p);
+    return 0;
 }
 
 
