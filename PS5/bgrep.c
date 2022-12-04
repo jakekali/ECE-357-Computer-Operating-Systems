@@ -29,11 +29,10 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
     if ((file=mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0))==MAP_FAILED)
         perror("oops");
            
-            for(int i=0;i<20;i++)
-        printf( "%c ",file[i]);
 
 
     char * file_start = file;
+    char * file_end = file + fsize;
     int fst = fsize;
     char *loc = NULL;
     while(loc = memmem(file, fsize, pattern, pattern_size)){
@@ -51,23 +50,32 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
             if ((beg = loc - pattern_context )< file_start){
                 beg = file_start;
             }
-            end = pattern_size + 2 * pattern_context;
-            if (loc + pattern_context + pattern_size + pattern_context > file_start + fst){
-                end = pattern_context + pattern_size;
+             end = pattern_size + 2 * pattern_context;
+            if(pattern_context > loc - beg) {
+                end = loc - beg + pattern_size + pattern_context; 
+               
             }
+             if(beg + end > file_end) {
+                    end = file_end - beg;
+                }
+            
+           
+          //  if (diff + pattern_context + pattern_size + pattern_context > fst){
+         //       end = pattern_context + pattern_size +1;
+         //   }
             printf(" ");
             memcpy(window, beg, end);
-            for(int i = 0; i < strlen(window); i++) {
+            for(int i = 0; i < end; i++) {
                  if(isprint(window[i]))  {
                  printf(" %c ", window[i]);
                  } else {
-                    printf( "? ", window[i]);
+                    printf( "? ", loc[i]);
                  }
                  
             }
             printf(" ");
-             for(int i = 0; i < strlen(window); i++) {
-                  printf(" %02X ", window[i]);
+             for(int i = 0; i < end; i++) {
+                  printf(" %X ", file[i] & 0xFF);
             }
             printf("\n");
            
