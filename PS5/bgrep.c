@@ -17,6 +17,8 @@
 jmp_buf int_jb;
 int fd; //fd of open file
 char *file_glob; 
+int sig_ret = 0;
+int syscall_fail = 0; //changes to -1 if any of the system call fail
 int processFile(char * pattern, int pattern_size, char *filename, int pattern_context) {
 	// mmap the input file
 	char * file;
@@ -80,7 +82,7 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
 				if(isprint(window[i]))  {
 					printf(" %c ", window[i]);
 				} else {
-					printf( " ? ", window[i]);
+					printf(" ? ");
 				}
 
 			}
@@ -105,6 +107,7 @@ int processFile(char * pattern, int pattern_size, char *filename, int pattern_co
 }
 
 void sigHandles(int signum){
+    sig_ret = 1;
 	optind++;
 	fprintf(stderr, "SIGBUS received while processing %s \n", file_glob);
 	siglongjmp(int_jb, 1);
@@ -167,28 +170,38 @@ int main(int argc, char * argv[])
 		optind++;
 	}
 	int filesPresent = 0;
+    int nofiles = argc - optind;
+    int filematchcount = 0;
 	sigsetjmp(int_jb, 1);
 	for (; optind < argc; optind++){ 
 		filesPresent = 1;
 		int ret_no;
 		if(ret_no = processFile(p, fsize, argv[optind], pattern_context)) {
-			free(p);
-			return ret_no;
+               if(ret_no == -1) {
+                syscall_fail = ret_no;
+               } else {
+                filematchcount++;
+               }
 
 		}
 	}
 	if(!filesPresent){
 		int ret_no;
+        nofiles = 1;
 		if(ret_no = processFile(p, fsize, NULL, pattern_context)) {
-			free(p);
-			return ret_no;
+             if(ret_no == -1) {
+                syscall_fail = ret_no;
+               } else {
+                filematchcount++;
+               }
 
 		}
 
 	}
 
 	free(p);
-	return 0;
+    return syscall_fail ? syscall_fail : (filematchcount == nofiles);
+  
 }
 
 
