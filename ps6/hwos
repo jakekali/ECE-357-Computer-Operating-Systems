@@ -1,0 +1,13 @@
+1 a) If this approach is ran on user-level code in a single-threaded CPU environment, this approach is valid as the only issue with synchronization
+in a single threaded single cpu is if a single handler and the main program both need to access the same data structure as the signal handlers invocation cannot 
+be controlled by the main program. This prevents this issue by blocking all signals (that can be blocked) from coming through (case SPK).
+1 b) In a multithreaded, Single CPU, user-level code environment (MTSPU) this code would not be effective as multiple indepdendent processes can share the same memory region meaning there is another control element besides signal handlers. Therefore, blocking all signals will not prevent memory from being written to these shared areas, which can be a problem that is 
+not resolved in this solution. 
+1 c) In a user-level code, multi-threaded, multi-CPU multiple indepdent processes can run in parallel and in this case the critical region operation can be run simultansiouly which can lead to incossitent results of whatever the critical region is supposed to do. Blocking signals does not prevent these processes from entering the critical region at the same time as only the local processor is affected by blocking of signals. This means if a process is blocking signals to prevent others from going into the critical region, it would not be effective as the
+other processes signals are not blocked. 
+1 d) for kernel-level code, single CPU this code would be effective if instead of signals all interupts on entry are masked in the critical region and restored this mask when the function f() exits. This is for an analogous reason to 1a) as there are cannot be multiple processors  running at the same time so, interupts are the only control needed for preventing the critical region from running incossitently from the programs desire. 
+1 e) For kernel-level code, multi-CPU even if this code was adjusted to block interupts instead of signals it would not be valid as disabling interupts would only effect 
+the local processor meaning that other processors can also enter the critical region at the same time and not be effected by the blocked interrupt mask. This can lead to incossitent results as the critical region would able to be run simultanasiouly. 
+
+2) This code is vulnerable to deadlock because there is chance that taskA() trylock R1 with Taskb() trylock R2 right after. This would be a deadlock because taskA is waiting for 
+taskB to unlock R2 while taskB is waiting for TaskA to unlock R1. Since both of these cannot progress since they are depedent on each other this is a deadlock. This (still not sure) 
