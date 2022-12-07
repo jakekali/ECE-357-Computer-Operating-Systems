@@ -11,3 +11,8 @@ the local processor meaning that other processors can also enter the critical re
 
 2) This code is vulnerable to deadlock because there is chance that taskA() trylock R1 with Taskb() trylock R2 right after. This would be a deadlock because taskA is waiting for 
 taskB to unlock R2 while taskB is waiting for TaskA to unlock R1. Since both of these cannot progress since they are depedent on each other this is a deadlock. This (still not sure) 
+
+2) This code is not vulnerable to deadlock because there is no block and wake up of mutex lp->lock in this scenario so there is
+no way that any of the tasks are put to sleep and blocked because trylock returns immediately. This means that deadlock is not possible. Livelock
+is not possible because there is no order of exectuion in which and endless loop of back and forth change of states can occur. This code
+does not properly block the mutex  which means it would not be good to use in avoiding syncranization issues.
