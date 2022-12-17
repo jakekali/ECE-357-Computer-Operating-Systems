@@ -49,6 +49,7 @@ ECE357:Computer Operating Systems PS 6/pg 4 ©2022 Jeff Hakner
 * held that protects cv_wait, as discussed in lecture notes under "Lost
 * Wakup", but note that cv_broadcast does not take a mutex as a parameter.
 * Return value: the number of sleepers that were awoken.
+
 */
 int cv_signal(struct cv *cv);
 /* Exactly the same as cv_broadcast except at most one sleeper is awoken.
