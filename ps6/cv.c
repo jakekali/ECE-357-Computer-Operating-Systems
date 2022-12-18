@@ -27,7 +27,8 @@ void cv_wait(struct cv *cv, struct spinlock *mutex) {
     sigprocmask(SIG_BLOCK, &mask, &oldmask); //block SIG1 as it 
         signal(SIGUSR1, handler);
    spin_lock(&cv->lock);
-    cv->wait_list[cv->wait_count++] = getpid(); //add process to wait list
+    cv->wait_list[cv->wait_count] = getpid(); //add process to wait list
+    cv->wait_count++;
     spin_unlock(&cv->lock);
     spin_unlock(mutex);
     sigsuspend(&oldmask);
@@ -36,7 +37,9 @@ void cv_wait(struct cv *cv, struct spinlock *mutex) {
    // fprintf(stderr, "I woke up and passed the handler # %d \n", getpid());
     if(cv->wait_count > 0) {
         spin_lock(&cv->lock);
-        cv->wait_list[--cv->wait_count] = 0;
+        cv->wait_list[cv->wait_count] = 0;
+        cv->wait_count--;
+      
      //   fprintf(stderr, "I removed myself from wait_list # %d \n", getpid());
         spin_unlock(&cv->lock);
     }

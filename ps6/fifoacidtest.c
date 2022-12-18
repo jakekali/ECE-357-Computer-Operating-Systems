@@ -6,7 +6,8 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <errno.h>
-#define NUM_WRITERS 2
+#include <signal.h>
+#define NUM_WRITERS 1
 #define NUM_INTERS 10000
 int counter[NUM_WRITERS]; 
 
@@ -23,16 +24,18 @@ int main(){
         if(c = fork() == 0){
             // Do Write 
             for(unsigned long d = (i-1)*NUM_INTERS; d <= (i*NUM_INTERS - 1); d++) {
-            //    fprintf(stderr, "Printing number #pnum %d, digit %d.  \n", i, d);
+           fprintf(stderr, "Printing number #pnum %d, digit %d.  \n", i, d);
                 fifo_wr(fifo_pipe, d);
             }
+    
+        //   kill(c-1, SIGUSR1);
             exit(0);
         }
         
     }
     
 
-    for(int i = 0; i < (NUM_INTERS - 1) * num_writer; i++){
+    for(int i = 1; i <= NUM_INTERS* num_writer; i++){
         unsigned long d = fifo_rd(fifo_pipe);
         int index = d / (NUM_INTERS);
         if(counter[index] > d){
@@ -48,7 +51,7 @@ int main(){
         fprintf(stderr, "Max in index %d, is %d \n", i, counter[i]);
     }
 
-    for(int i = 0; i < num_writer; i++) {
+    for(int i = 0; i < num_writer + 1; i++) {
         wait(NULL);
     }
     exit(0);
