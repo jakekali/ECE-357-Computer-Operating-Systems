@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include <errno.h>
 int main() {
 struct cv *test = mmap(NULL, sizeof(struct cv), PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
 struct spinlock *test_lock = mmap(NULL, sizeof(struct spinlock), PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);

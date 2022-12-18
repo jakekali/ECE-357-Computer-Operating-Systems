@@ -3,6 +3,7 @@
         "stdio.h": "c",
         "cv.h": "c",
         "chrono": "c",
-        "variant": "c"
+        "variant": "c",
+        "shared_mutex": "c"
     }
 }

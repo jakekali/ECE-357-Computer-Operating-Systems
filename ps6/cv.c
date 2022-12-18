@@ -4,23 +4,28 @@
 #include "cv.h"
 #include <signal.h>
 #include <string.h>
+#include <sys/mman.h>
 void handler(int signum) {
   //  fprintf(stderr, "I have gotten a SIGUSR1 pid# %d \n", getpid());
     return;
 }
 void cv_init(struct cv *cv) {
     memset(cv, 0, sizeof(cv));
+   //	struct spinlock *l = mmap(NULL, sizeof(struct spinlock), PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_SHARED, -1, 0);
+   //// struct spinlock *test = &cv->lock;
+    //    test  = l;
+ //   spin_unlock(&cv->lock);
 };
 
 void cv_wait(struct cv *cv, struct spinlock *mutex) {
-    signal(SIGUSR1, handler);
+
     sigset_t mask, oldmask, all_butsigusr1;
     sigfillset(&all_butsigusr1);
     sigdelset(&all_butsigusr1, SIGUSR1);
     sigemptyset(&mask);
     sigaddset (&mask, SIGUSR1); //add sig1 to blocked set
     sigprocmask(SIG_BLOCK, &mask, &oldmask); //block SIG1 as it 
-    signal(SIGUSR1, handler);
+        signal(SIGUSR1, handler);
    spin_lock(&cv->lock);
     cv->wait_list[cv->wait_count++] = getpid(); //add process to wait list
     spin_unlock(&cv->lock);

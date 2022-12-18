@@ -1,6 +1,6 @@
 
 #include "fifo.h"
-
+#include <sys/mman.h>
 void fifo_init(struct fifo *f) {
     memset(f, 0, sizeof(struct fifo));
     cv_init(&f->empty);
@@ -8,6 +8,11 @@ void fifo_init(struct fifo *f) {
     f->next_read=0;
     f->next_write=0;
     f->item_count=0;
+     //	struct spinlock *l = mmap(NULL, sizeof(struct spinlock), PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_SHARED, -1, 0);
+     //   struct spinlock *test = &f->mutex;
+     //   test = l;
+        
+  //  spin_unlock(&f->mutex);
 }
 /* Initialize the shared memory FIFO *f including any required underlying
 * initializations (such as calling cv_init). The FIFO will have a static

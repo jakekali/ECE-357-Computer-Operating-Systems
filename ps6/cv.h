@@ -4,6 +4,7 @@
 #include "spinlock.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>  
 struct cv{
     struct spinlock lock;
     pid_t wait_list[64];
