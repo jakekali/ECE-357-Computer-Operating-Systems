@@ -21,11 +21,11 @@ void cv_wait(struct cv *cv, struct spinlock *mutex) {
     sigaddset (&mask, SIGUSR1); //add sig1 to blocked set
     sigprocmask(SIG_BLOCK, &mask, &oldmask); //block SIG1 as it 
     signal(SIGUSR1, handler);
-    spin_lock(&cv->lock);
+   spin_lock(&cv->lock);
     cv->wait_list[cv->wait_count++] = getpid(); //add process to wait list
     spin_unlock(&cv->lock);
     spin_unlock(mutex);
-    sigsuspend(&all_butsigusr1);
+    sigsuspend(&oldmask);
 
     
    // fprintf(stderr, "I woke up and passed the handler # %d \n", getpid());
@@ -72,11 +72,14 @@ int cv_broadcast(struct cv *cv) {
 }
 
 int cv_signal(struct cv *cv) {
-     spin_lock(&cv->lock);
+    spin_lock(&cv->lock);
+
     if(cv->wait_count == 0) {
+        spin_unlock(&cv->lock);
         return  0;
     }
+    fprintf(stderr, "SIG USER1 SENT TO: %d \n",cv->wait_list[cv->wait_count - 1]);
     kill(cv->wait_list[cv->wait_count - 1], SIGUSR1);
-     spin_unlock(&cv->lock);
+    spin_unlock(&cv->lock);
     return 0;
 }

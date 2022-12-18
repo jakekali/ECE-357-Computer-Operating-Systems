@@ -22,31 +22,30 @@ ECE357:Computer Operating Systems PS 6/pg 5 ©2022 Jeff Hakner
 */
 spin_lock(&f->mutex);
 
-fprintf(stderr, "ITEM COUNT: %d > = %d\n", f->item_count, MYFIFO_BUFSIZ);
-
-//while(f->item_count >= MYFIFO_BUFSIZ){
-  //  cv_wait(&f->full, &f->mutex);
-//}
+// fprintf(stderr, "ITEM COUNT: %d > = %d\n", f->item_count, MYFIFO_BUFSIZ);
+// 
+while(f->item_count >= MYFIFO_BUFSIZ){
+   cv_wait(&f->full, &f->mutex);
+}
 f->buf[f->next_write++] = d; 
 f->next_write%=MYFIFO_BUFSIZ;
 f->item_count++;
-fprintf(stderr, "Before CV_SIGNAL", f->item_count, MYFIFO_BUFSIZ);
-
 cv_signal(&f->empty);
 spin_unlock(&f->mutex);
 }
 
 unsigned long fifo_rd(struct fifo *f) {
     unsigned long d;
-    spin_lock(&f->mutex);
+   spin_lock(&f->mutex);
         while(f->item_count<=0) {
             cv_wait(&f->empty, &f->mutex);
         }
     d=f->buf[f->next_read++];
     f->next_read%= MYFIFO_BUFSIZ;
     f->item_count--;
-    cv_signal(&f->full);
+     cv_signal(&f->full);
     spin_unlock(&f->mutex);
+       
     return d;
 
 }   
