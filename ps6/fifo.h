@@ -1,3 +1,7 @@
+
+
+#ifndef FIFO_H
+#define FIFO_H
 #define MYFIFO_BUFSIZ 1024
 #include "cv.h"
 #include "spinlock.h"
@@ -26,3 +30,4 @@ unsigned long fifo_rd(struct fifo *f);
 * and until there are available words. (i.e. block until !empty)
 * Wake up a writer which was waiting for the FIFO to be non-full
 */
+#endif

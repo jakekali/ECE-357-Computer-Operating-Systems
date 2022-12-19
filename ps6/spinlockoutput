@@ -1,0 +1,3 @@
+Number of Iterations * Children : 160000 
+ With spinlock mutex: 160000 
+Without spinlock mutex: 145168 

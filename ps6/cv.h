@@ -1,13 +1,18 @@
 
 
 
+
+
+#ifndef CV_H
+#define CV_H
 #include "spinlock.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>  
+#define CV_MAXPROC 64
 struct cv{
     struct spinlock lock;
-    pid_t wait_list[64];
+    pid_t wait_list[CV_MAXPROC];
     int wait_count;
 };
 void cv_init(struct cv *cv);
@@ -37,3 +42,4 @@ int cv_signal(struct cv *cv);
 /* Exactly the same as cv_broadcast except at most one sleeper is awoken.
 * Your choice how to pick which one if more than one candidate
 */
+#endif 

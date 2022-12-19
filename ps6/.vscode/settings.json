@@ -4,6 +4,8 @@
         "cv.h": "c",
         "chrono": "c",
         "variant": "c",
-        "shared_mutex": "c"
+        "shared_mutex": "c",
+        "types.h": "c",
+        "spinlock.h": "c"
     }
 }

@@ -4,7 +4,7 @@
 #include <sched.h>
 void spin_lock(struct spinlock *l) {
   while (tas(&(l->lock)) != 0) {
-   ;
+   // sched_yield();
   }
 }
 

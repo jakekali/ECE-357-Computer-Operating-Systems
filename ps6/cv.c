@@ -20,15 +20,12 @@ void cv_init(struct cv *cv) {
 void cv_wait(struct cv *cv, struct spinlock *mutex) {
 
     sigset_t mask, oldmask, all_butsigusr1;
-    sigfillset(&all_butsigusr1);
-    sigdelset(&all_butsigusr1, SIGUSR1);
     sigemptyset(&mask);
     sigaddset (&mask, SIGUSR1); //add sig1 to blocked set
     sigprocmask(SIG_BLOCK, &mask, &oldmask); //block SIG1 as it 
-        signal(SIGUSR1, handler);
-   spin_lock(&cv->lock);
-    cv->wait_list[cv->wait_count] = getpid(); //add process to wait list
-    cv->wait_count++;
+    signal(SIGUSR1, handler);
+    spin_lock(&cv->lock);
+    cv->wait_list[cv->wait_count++] = getpid(); //add process to wait list
     spin_unlock(&cv->lock);
     spin_unlock(mutex);
     sigsuspend(&oldmask);
@@ -38,7 +35,7 @@ void cv_wait(struct cv *cv, struct spinlock *mutex) {
     if(cv->wait_count > 0) {
         spin_lock(&cv->lock);
         cv->wait_list[cv->wait_count] = 0;
-        cv->wait_count--;
+     //   cv->wait_count--;
       
      //   fprintf(stderr, "I removed myself from wait_list # %d \n", getpid());
         spin_unlock(&cv->lock);
@@ -86,8 +83,8 @@ int cv_signal(struct cv *cv) {
         spin_unlock(&cv->lock);
         return  0;
     }
-    fprintf(stderr, "SIG USER1 SENT TO: %d \n",cv->wait_list[cv->wait_count - 1]);
-    kill(cv->wait_list[cv->wait_count - 1], SIGUSR1);
+    //fprintf(stderr, "SIG USER1 SENT TO: %d \n",cv->wait_list[cv->wait_count - 1]);
+    kill(cv->wait_list[--cv->wait_count], SIGUSR1);
     spin_unlock(&cv->lock);
     return 0;
 }

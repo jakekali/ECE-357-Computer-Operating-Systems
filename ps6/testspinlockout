@@ -1,0 +1,9 @@
+./a.out 16 1000000 > testspinlockout
+Number of Iterations * Children : 16000000 
+ With spinlock mutex: 16000000 
+Without spinlock mutex: 17439458 
+
+
+/* As we can see, with the spinlock mutex we get the correct amount of numiterations*Children. 
+But without it we do not. As it is greater this means that without the spinlock mutex there 
+was scenarios of "double counting" where more than one process incremented the mutex at the same time. */
